@@ -1,0 +1,165 @@
+﻿<Window x:Class="WPF_UnityInspector.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Unity Project Inspector"
+        Width="1000"
+        Height="700">
+
+    <TabControl>
+        <TabItem Header="Dashboard">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32">
+
+            <TextBlock Text="Unity Project Inspector"
+                       FontSize="26"
+                       FontWeight="Bold"
+                       Margin="0,0,0,24" />
+
+            <Button Content="Select Unity Project"
+            Width="180"
+            Height="36"
+            HorizontalAlignment="Left"
+            Click="OnSelectProjectClicked"
+            Margin="0,0,0,12" />
+
+            <TextBlock Text="{Binding ProjectPath}"
+               Foreground="Gray"
+               TextWrapping="Wrap"
+               Margin="0,0,0,24" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           Text="Project"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="1"
+                           Text="{Binding ProjectName}" />
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           Text="Unity Version"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="1"
+                           Text="{Binding UnityVersion}" />
+
+                <TextBlock Grid.Row="2"
+                           Grid.Column="0"
+                           Text="Build Result"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="2"
+                           Grid.Column="1"
+                           Text="{Binding BuildResult}" />
+
+                <TextBlock Grid.Row="3"
+                           Grid.Column="0"
+                           Text="Platform"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="3"
+                           Grid.Column="1"
+                           Text="{Binding Platform}" />
+
+                <TextBlock Grid.Row="4"
+                           Grid.Column="0"
+                           Text="Artifact Size"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="4"
+                           Grid.Column="1"
+                           Text="{Binding ArtifactSize}" />
+
+                <TextBlock Grid.Row="5"
+                           Grid.Column="0"
+                           Text="Build Time"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="5"
+                           Grid.Column="1"
+                           Text="{Binding BuildTime}" />
+
+                <TextBlock Grid.Row="6"
+                           Grid.Column="0"
+                           Text="Warnings"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="6"
+                           Grid.Column="1"
+                           Text="{Binding WarningCount}" />
+
+                <TextBlock Grid.Row="7"
+                           Grid.Column="0"
+                           Text="Errors"
+                           FontWeight="SemiBold" />
+
+                <TextBlock Grid.Row="7"
+                           Grid.Column="1"
+                           Text="{Binding ErrorCount}" />
+            </Grid>
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="SteelBlue"
+                       Margin="0,20,0,0" />
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="Red"
+                       TextWrapping="Wrap"
+                       Margin="0,8,0,0" />
+
+        </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Build Analyzer">
+            <DataGrid ItemsSource="{Binding Assets}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserSortColumns="True"
+                  EnableRowVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  Margin="12">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name"
+                                    Binding="{Binding Name}"
+                                    Width="220" />
+
+                    <DataGridTextColumn Header="Type"
+                                    Binding="{Binding Type}"
+                                    Width="110" />
+
+                    <DataGridTextColumn Header="Packed Size (bytes)"
+                                    Binding="{Binding PackedSizeBytes, StringFormat={}{0:N0}}"
+                                    SortMemberPath="PackedSizeBytes"
+                                    Width="155" />
+
+                    <DataGridTextColumn Header="Path"
+                                    Binding="{Binding Path}"
+                                    Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+    </TabControl>
+</Window>
