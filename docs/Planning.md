@@ -341,6 +341,8 @@ Unity에서 빌드가 이른 단계에 실패하거나 사용자가 취소한 �
 
 콜백 이전 실패까지 수집하는 기능은 별도 빌드 실행기 또는 Editor 로그 수집 설계가 필요하므로 Version 1.1 이후 검토 대상으로 둔다.
 
+**현재 검증 상태(2026-09-18):** Unity 6000.3.20f1의 Windows 빌드에서 자동 JSON이 최종 결과보다 먼저 생성되는 문제와 UTC 시각 변환 오차를 발견했습니다. Unity 패키지 v0.2.2에서 결과 확정 후 내보내도록 수정했고, Editor가 열린 상태와 배치 모드의 성공 빌드에서 `Succeeded`, Build Time, Unity 보고 출력 크기, UTC 시각을 자동 JSON으로 재검증했습니다. Android 수정 후 빌드, 실제 취소, Unity 2022.3은 아직 검증하지 않았습니다. [검증 기록](VERIFICATION_2026-09-18.md)을 참고하세요.
+
 ---
 
 # 10. 데이터 흐름
@@ -397,12 +399,12 @@ WPF UI 표시
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "projectName": "Dots Arena",
   "unityVersion": "6000.3.20f1",
   "assetSizeDefinition": "Unity BuildReport PackedAssetInfo.packedSize",
   "build": {
-    "buildGuid": "3d1f26d6-3798-4a94-8e3f-a730cc9ac199",
+    "buildGuid": "3d1f26d637984a948e3fa730cc9ac199",
     "platform": "Android",
     "result": "Succeeded",
     "outputPath": "Builds/Android/DotsArena.apk",
@@ -410,9 +412,13 @@ WPF UI 표시
     "buildEndedAtUtc": "2026-09-17T04:20:00Z",
     "reportGeneratedAtUtc": "2026-09-17T04:20:01Z",
     "buildTimeSeconds": 74.3,
-    "outputSizeBytes": 182345678,
-    "warningCount": 13,
-    "errorCount": 0
+    "reportedOutputSizeBytes": 182345678,
+    "artifactSizeBytes": 95230648,
+    "artifactSizeSource": "File",
+    "warningCount": 1,
+    "errorCount": 0,
+    "reportedWarningCount": 1,
+    "reportedErrorCount": 0
   },
   "assets": [
     {
@@ -478,10 +484,14 @@ public class BuildInfo
 
     public double BuildTimeSeconds { get; set; }
 
-    public ulong OutputSizeBytes { get; set; }
+    public long ReportedOutputSizeBytes { get; set; }
+    public long ArtifactSizeBytes { get; set; }
+    public string ArtifactSizeSource { get; set; }
 
     public int WarningCount { get; set; }
     public int ErrorCount { get; set; }
+    public int ReportedWarningCount { get; set; }
+    public int ReportedErrorCount { get; set; }
 }
 ```
 
@@ -496,7 +506,7 @@ public class AssetBuildInfo
     public string Path { get; set; }
     public string Type { get; set; }
 
-    public ulong PackedSizeBytes { get; set; }
+    public long PackedSizeBytes { get; set; }
 }
 ```
 
@@ -506,21 +516,13 @@ public class AssetBuildInfo
 
 ## 12.4 BuildMessage
 
+현재 JSON과 WPF DTO의 `type`은 문자열이다. exporter는 `Warning`과 `Error` 메시지만 기록한다.
+
 ```csharp
 public class BuildMessage
 {
-    public BUILD_MESSAGE_TYPE_ENUM Type { get; set; }
-
+    public string Type { get; set; }
     public string Message { get; set; }
-}
-```
-
-```csharp
-public enum BUILD_MESSAGE_TYPE_ENUM
-{
-    INFO,
-    WARNING,
-    ERROR
 }
 ```
 
@@ -628,6 +630,8 @@ Assets
 - Report Generated At
 - Build Output Size
 - Build Time
+
+현재 WPF의 `Artifact Size`는 Unity `outputPath`가 가리키는 파일 또는 디렉터리 크기다. Windows Standalone처럼 `outputPath`가 EXE이면 Data 폴더가 포함되지 않으므로 전체 배포 폴더 크기로 표현하지 않는다.
 
 예:
 
@@ -942,25 +946,13 @@ Version 1.1부터 Build History를 지원한다.
 
 # 22. Application Settings
 
-WPF 프로그램 자체 설정은 다음 위치에 저장한다.
+현재 구현은 마지막으로 선택한 프로젝트 경로를 다음 텍스트 파일에 저장한다.
 
 ```text
-%AppData%/UnityProjectInspector/
+%LocalAppData%/HM/UnityProjectInspector/last-project.txt
 ```
 
-예:
-
-```text
-settings.json
-```
-
-내용:
-
-```json
-{
-  "lastProjectPath": "D:/Fork/Dots-Boxes"
-}
-```
+파일 내용은 Unity 프로젝트 루트의 절대 경로 한 줄이다. 앱을 다시 실행하면 경로가 유효한 Unity 프로젝트인 경우 자동으로 불러온다.
 
 ---
 
@@ -1083,6 +1075,8 @@ Unity에서 Build 후 다시 확인하십시오.
 
 마지막 보고서가 존재하는 경우에는 `reportGeneratedAtUtc`를 표시한다. 현재 실행한 빌드가 콜백 이전에 중단되었을 가능성이 있으므로 단순히 "최근 빌드"라고 단정하지 않는다.
 
+위 `No Build Data`와 분석 화면 안내는 UI 개편 시 적용할 목표 상태다. 현재 WPF 구현은 보고서가 없으면 `ErrorMessage`에 안내를 표시한다.
+
 ---
 
 ## JSON 파싱 실패
@@ -1179,7 +1173,8 @@ D:\Fork\Dots-Boxes
 - `BuildSummary`, `PackedAssets`, `BuildStep.messages` 수집 가능 여부 확인
 - 같은 `sourceAssetPath`가 여러 packed 항목으로 나오는 경우의 합산 규칙 확인
 - 성공 빌드, 실패 빌드, 취소 빌드에서 콜백 호출 여부 기록
-- Version 1 JSON 스키마 확정
+- 현재 JSON 계약은 Schema 2로 구현됨
+- Unity 패키지 v0.2.2에서 자동 Export 결과와 UTC 시각 변환 수정; Unity 6000.3.20f1 Windows 성공·조기 실패 재검증 완료 ([검증 기록](VERIFICATION_2026-09-18.md))
 
 ---
 

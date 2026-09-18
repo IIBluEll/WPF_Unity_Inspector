@@ -6,6 +6,8 @@ namespace WPF_UnityInspector.Services
     {
         private const string REPORT_DIRECTORY_NAME = ".unityprojectinspector";
         private const string REPORT_FILE_NAME = "build_report.json";
+        private const string PROJECT_VERSION_FILE_NAME = "ProjectVersion.txt";
+        private const string EDITOR_VERSION_PREFIX = "m_EditorVersion:";
 
         private static readonly string[] REQUIRED_DIRECOTRY_NAMES =
         {
@@ -13,6 +15,36 @@ namespace WPF_UnityInspector.Services
             "Packages",
             "ProjectSettings"
         };
+
+        public string GetProjectName(string projectPath)
+        {
+            return new DirectoryInfo(Path.GetFullPath(projectPath)).Name;
+        }
+
+        public string GetUnityVersion(string projectPath)
+        {
+            string versionPath = Path.Combine(projectPath, "ProjectSettings", PROJECT_VERSION_FILE_NAME);
+
+            try
+            {
+                foreach(string line in File.ReadLines(versionPath))
+                {
+                    if(!line.StartsWith(EDITOR_VERSION_PREFIX, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    string version = line[EDITOR_VERSION_PREFIX.Length..].Trim();
+                    return version.Length > 0 ? version : "-";
+                }
+            }
+            catch(Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                return "-";
+            }
+
+            return "-";
+        }
 
         public bool IsUnityProject(string projectPath)
         {
