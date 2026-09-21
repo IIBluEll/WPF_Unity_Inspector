@@ -4,7 +4,6 @@ Unity 프로젝트를 열지 않고도 프로젝트 정보와 최근 빌드 결�
 
 Unity Editor 패키지가 빌드 결과를 JSON으로 내보내고, WPF 애플리케이션이 해당 파일을 읽어 프로젝트 용량, 빌드 요약, 포함 Asset과 Warning/Error를 표시합니다.
 
-> 현재 개발 버전입니다. 실행 파일 배포본은 아직 제공하지 않으며 소스에서 직접 실행해야 합니다.
 
 ## 주요 기능
 
@@ -70,8 +69,6 @@ WPF 애플리케이션은 Unity 프로젝트의 `Assets`, `Packages`, `ProjectSe
 
 - 선언된 최소 Unity 버전: Unity 2022.3
 - Git URL 설치 시 Git 2.14 이상
-
-Unity 2022.3 이상을 지원 대상으로 선언했지만, 현재 실제 빌드 검증은 Unity 6000.3.20f1에서 수행했습니다.
 
 ## Unity 패키지 설치
 
@@ -235,5 +232,3 @@ Unity 6000.3.20f1에서 다음 항목을 확인했습니다.
 - Asset Dependency 분석
 - Missing Reference와 Missing Script 진단
 - 배포용 단일 실행 파일과 설치 프로그램
-
-기능 범위와 장기 계획은 [기획서](docs/Planning.md)를 참고하세요.
