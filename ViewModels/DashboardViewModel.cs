@@ -5,10 +5,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using WPF_UnityInspector.Models;
 using WPF_UnityInspector.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace WPF_UnityInspector.ViewModels
 {
-    public sealed class DashboardViewModel : INotifyPropertyChanged
+    public sealed partial class DashboardViewModel : ObservableObject
     {
         private static readonly string[] SIZE_UNITS =
         {
@@ -65,7 +66,11 @@ namespace WPF_UnityInspector.ViewModels
         private string _statusMessage = string.Empty;
         private string _errorMessage = string.Empty;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        [ObservableProperty]
+        private bool _isLoading;
+
+        [ObservableProperty]
+        private string _loadingMessage = string.Empty;
 
         public DashboardViewModel(
             IBuildReportService buildReportService,
@@ -297,6 +302,45 @@ namespace WPF_UnityInspector.ViewModels
             }
         }
 
+        public async Task ReloadBuildReport_async(CancellationToken cancellationToken = default)
+        {
+            if(!_projectFileService.IsUnityProject(ProjectPath))
+            {
+                ErrorMessage = "먼저 Unity 프로젝트를 선택해 주세요.";
+                return;
+            }
+
+            StatusMessage = "Build Report를 새로고침중...";
+            ErrorMessage = string.Empty;
+
+            try
+            {
+                string reportPath = _projectFileService.GetBuildReportPath(ProjectPath);
+
+                BuildReportData reportData = await _buildReportService.LoadBuildReport_async(reportPath, cancellationToken);
+
+                ApplyBuildReport(reportData);
+                StatusMessage = "Build Report를 새로고침함";
+            }
+            catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested )
+            {
+                StatusMessage = "Build Report 새로고침이 취소됨";
+            }
+            catch ( Exception ex )
+            {
+                ErrorMessage = ex switch
+                {
+                    FileNotFoundException => "Build Report가 없음!",
+                    JsonException => "Json 형식이 올바르지 않음!",
+                    NotSupportedException or InvalidDataException => ex.Message,
+
+                    _ => $"Build Report를 새로고침할 수 없음! {ex.Message}",
+                };
+
+                StatusMessage = string.Empty;
+            }
+        }
+
         public async Task<bool> LoadProject_async(
             string projectPath,
             CancellationToken cancellationToken = default)
@@ -307,6 +351,9 @@ namespace WPF_UnityInspector.ViewModels
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             _loadCancellationTokenSource = loadCancellationTokenSource;
+
+            IsLoading = true;
+            LoadingMessage = "프로젝트 정보를 분석하는 중입니다...";
 
             ResetBuildSummary();
             ProjectPath = projectPath;
@@ -358,6 +405,9 @@ namespace WPF_UnityInspector.ViewModels
                 if ( ReferenceEquals(_loadCancellationTokenSource, loadCancellationTokenSource) )
                 {
                     _loadCancellationTokenSource = null;
+
+                    IsLoading = false;
+                    LoadingMessage = string.Empty;
                 }
             }
         }
@@ -525,24 +575,6 @@ namespace WPF_UnityInspector.ViewModels
             }
 
             return buildTime.ToString(@"mm\:ss");
-        }
-
-        private bool SetProperty<T>(ref T field , T value , [CallerMemberName] string? propertyName = null)
-        {
-            if ( EqualityComparer<T>.Default.Equals(field , value) )
-            {
-                return false;
-            }
-
-            field = value;
-            OnPropertyChanged(propertyName);
-
-            return true;
-        }
-
-        private void OnPropertyChanged(string? propertyName)
-        {
-            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(propertyName));
         }
 
         private bool FilterAsset(object item)

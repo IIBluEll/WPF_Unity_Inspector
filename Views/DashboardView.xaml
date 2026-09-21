@@ -1,0 +1,355 @@
+<UserControl x:Class="WPF_UnityInspector.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="900"
+             d:DesignHeight="700">
+    <UserControl.Resources>
+        <Style x:Key="DashboardCardStyle"
+               TargetType="Border">
+            <Setter Property="Background"
+                    Value="White" />
+            <Setter Property="BorderBrush"
+                    Value="#E2E6EB" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="CornerRadius"
+                    Value="8" />
+            <Setter Property="Padding"
+                    Value="20" />
+        </Style>
+
+        <Style x:Key="DashboardSectionTitleStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="16" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="#1D2939" />
+        </Style>
+
+        <Style x:Key="DashboardLabelStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="Foreground"
+                    Value="#667085" />
+        </Style>
+
+        <Style x:Key="DashboardValueStyle"
+               TargetType="TextBlock">
+            <Setter Property="Margin"
+                    Value="0,5,0,0" />
+            <Setter Property="FontSize"
+                    Value="20" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="#1D2939" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28">
+            <TextBlock Text="Dashboard"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#101828"
+                       Margin="0,0,0,6" />
+
+            <TextBlock Text="선택한 Unity 프로젝트와 마지막으로 내보낸 Build Report를 요약합니다."
+                       Foreground="#667085"
+                       Margin="0,0,0,20" />
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="#3478C9"
+                       Margin="0,0,0,12">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding StatusMessage}"
+                                         Value="">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="#C62828"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,12">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ErrorMessage}"
+                                         Value="">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Style="{StaticResource DashboardCardStyle}"
+                        Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Project Overview"
+                                   Style="{StaticResource DashboardSectionTitleStyle}"
+                                   Margin="0,0,0,16" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="Project"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="{Binding ProjectName}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#1D2939" />
+
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="Unity Version"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="1"
+                                       Text="{Binding UnityVersion}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#1D2939" />
+
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="0"
+                                       Text="Path"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       Text="{Binding ProjectPath}"
+                                       Foreground="#344054"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding ProjectPath}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1"
+                        Style="{StaticResource DashboardCardStyle}"
+                        Margin="8,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Build Information"
+                                   Style="{StaticResource DashboardSectionTitleStyle}"
+                                   Margin="0,0,0,16" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="Result"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="{Binding BuildResult}"
+                                       FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground"
+                                                Value="#344054" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BuildResult}"
+                                                         Value="Succeeded">
+                                                <Setter Property="Foreground"
+                                                        Value="#238636" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BuildResult}"
+                                                         Value="Failed">
+                                                <Setter Property="Foreground"
+                                                        Value="#C62828" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding BuildResult}"
+                                                         Value="Cancelled">
+                                                <Setter Property="Foreground"
+                                                        Value="#D97706" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="Platform"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="1"
+                                       Text="{Binding Platform}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#1D2939" />
+
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="0"
+                                       Text="Report Generated"
+                                       Foreground="#667085" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       Text="{Binding ReportGeneratedAt}"
+                                       Foreground="#344054" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <UniformGrid Columns="4"
+                         Margin="0,0,0,16">
+                <Border Style="{StaticResource DashboardCardStyle}"
+                        Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Artifact Size"
+                                   Style="{StaticResource DashboardLabelStyle}" />
+                        <TextBlock Text="{Binding ArtifactSize}"
+                                   Style="{StaticResource DashboardValueStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}"
+                        Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Build Time"
+                                   Style="{StaticResource DashboardLabelStyle}" />
+                        <TextBlock Text="{Binding BuildTime}"
+                                   Style="{StaticResource DashboardValueStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}"
+                        Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Warnings"
+                                   Style="{StaticResource DashboardLabelStyle}" />
+                        <TextBlock Text="{Binding WarningCount}"
+                                   Style="{StaticResource DashboardValueStyle}"
+                                   Foreground="#D97706" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Errors"
+                                   Style="{StaticResource DashboardLabelStyle}" />
+                        <TextBlock Text="{Binding ErrorCount}"
+                                   Style="{StaticResource DashboardValueStyle}"
+                                   Foreground="#C62828" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Style="{StaticResource DashboardCardStyle}"
+                    Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Project Storage"
+                               Style="{StaticResource DashboardSectionTitleStyle}"
+                               Margin="0,0,0,16" />
+
+                    <UniformGrid Columns="3">
+                        <StackPanel>
+                            <TextBlock Text="Project Disk"
+                                       Style="{StaticResource DashboardLabelStyle}" />
+                            <TextBlock Text="{Binding ProjectDiskSize}"
+                                       Style="{StaticResource DashboardValueStyle}" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Project Source"
+                                       Style="{StaticResource DashboardLabelStyle}" />
+                            <TextBlock Text="{Binding ProjectSourceSize}"
+                                       Style="{StaticResource DashboardValueStyle}" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Assets"
+                                       Style="{StaticResource DashboardLabelStyle}" />
+                            <TextBlock Text="{Binding AssetsSize}"
+                                       Style="{StaticResource DashboardValueStyle}" />
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <TextBlock Text="{Binding StorageStatus}"
+                               Margin="0,16,0,0"
+                               Foreground="#667085"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Asset Type별 Packed Size"
+                               Style="{StaticResource DashboardSectionTitleStyle}"
+                               Margin="0,0,0,4" />
+
+                    <TextBlock Text="BuildReport에 기록된 Asset 크기 합계이며 전체 빌드 출력 크기와 산출 기준이 다릅니다."
+                               Foreground="#667085"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14" />
+
+                    <DataGrid ItemsSource="{Binding AssetTypeSummaries}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              HeadersVisibility="Column"
+                              RowHeaderWidth="0"
+                              GridLinesVisibility="Horizontal"
+                              BorderThickness="0"
+                              Height="300">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Type"
+                                                Binding="{Binding Type}"
+                                                Width="*" />
+                            <DataGridTextColumn Header="Assets"
+                                                Binding="{Binding AssetCount}"
+                                                Width="100" />
+                            <DataGridTextColumn Header="Packed Size (bytes)"
+                                                Binding="{Binding PackedSizeBytes, StringFormat={}{0:N0}}"
+                                                Width="180" />
+                            <DataGridTextColumn Header="Share (%)"
+                                                Binding="{Binding SharePercent, StringFormat={}{0:F1}}"
+                                                Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

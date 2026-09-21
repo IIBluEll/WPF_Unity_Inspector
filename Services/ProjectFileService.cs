@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Text.Json;
+using WPF_UnityInspector.Models;
 
 namespace WPF_UnityInspector.Services
 {
@@ -8,6 +10,10 @@ namespace WPF_UnityInspector.Services
         private const string REPORT_FILE_NAME = "build_report.json";
         private const string PROJECT_VERSION_FILE_NAME = "ProjectVersion.txt";
         private const string EDITOR_VERSION_PREFIX = "m_EditorVersion:";
+
+        private const string INSPECTOR_PACKAGE_NAME = "com.hm.unity-project-inspector";
+        private const string MANIFEST_FILE_NAME = "manifest.json";
+        private const string PACKAGE_FILE_NAME = "package.json";
 
         private static readonly string[] REQUIRED_DIRECOTRY_NAMES =
         {
@@ -69,6 +75,61 @@ namespace WPF_UnityInspector.Services
             }
 
             return true;
+        }
+
+        public bool HasBuildReport(string projectPath)
+        {
+            return File.Exists(GetBuildReportPath(projectPath));
+        }
+
+        public UNITY_PACKAGE_STATE GetInspectorPackageState(string projectPath)
+        {
+            if(!IsUnityProject(projectPath))
+            {
+                return UNITY_PACKAGE_STATE.UNKNOWN;
+            }
+
+            string packagesPath = Path.Combine(Path.GetFullPath(projectPath),"Packages");
+
+            string embeddedPackagePath = Path.Combine(packagesPath, INSPECTOR_PACKAGE_NAME, PACKAGE_FILE_NAME);
+
+            if(File.Exists(embeddedPackagePath))
+            {
+                return UNITY_PACKAGE_STATE.INSTALLED;
+            }
+
+            string manifestPath = Path.Combine(packagesPath, MANIFEST_FILE_NAME);
+
+            if(!File.Exists(manifestPath))
+            {
+                return UNITY_PACKAGE_STATE.UNKNOWN;
+            }
+
+            try
+            {
+                using FileStream stream = File.OpenRead(manifestPath);
+
+                using JsonDocument manifest = JsonDocument.Parse(
+            stream,
+            new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            });
+
+                bool hasDependencies = manifest.RootElement.TryGetProperty("dependencies", out JsonElement dependencies);
+
+                if ( !hasDependencies || dependencies.ValueKind != JsonValueKind.Object ) return UNITY_PACKAGE_STATE.UNKNOWN;
+
+                return dependencies.TryGetProperty(INSPECTOR_PACKAGE_NAME , out _) ? UNITY_PACKAGE_STATE.INSTALLED :  UNITY_PACKAGE_STATE.NOT_INSTALLED;
+            }
+            catch ( Exception exception ) when (
+                exception is IOException or
+                UnauthorizedAccessException or
+                JsonException )
+            {
+                return UNITY_PACKAGE_STATE.UNKNOWN;
+            }
         }
 
         public string GetBuildReportPath(string projectPath)
